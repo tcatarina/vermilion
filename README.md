@@ -41,7 +41,7 @@ Open **http://localhost:5173**, go to Settings (⚙), and enter your Redmine URL
 | Service            | URL                   | Description              |
 |--------------------|-----------------------|--------------------------|
 | Frontend           | http://localhost:5173 | Vue SPA (Vite dev server)|
-| Backend            | http://localhost:20030| Go JSON API              |
+| Backend            | http://localhost:4588 | Go JSON API              |
 | Vermilion Postgres | localhost:5433        | App database             |
 
 ## Development

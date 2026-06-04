@@ -33,7 +33,7 @@ services:
       VERMILION_PG_DSN: postgres://${VERMILION_PG_USER:-vermilion}:${VERMILION_PG_PASSWORD:-vermilion}@vermilion-postgres:5432/${VERMILION_PG_DB:-vermilion}?sslmode=disable
       RUNNING_IN_CONTAINER: "true"
     ports:
-      - "20030:8080"
+      - "4588:8080"
     volumes:
       - ./backend:/app
       - /app/tmp
