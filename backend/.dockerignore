@@ -1,0 +1,6 @@
+.git
+tmp
+backend.exe
+*.test
+*.out
+build-errors.log
