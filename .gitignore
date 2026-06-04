@@ -1,0 +1,143 @@
+# --- OS / editor noise -----------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+# Swap / backups
+*.swp
+*.swo
+*.swn
+*~
+.*.bak
+.*.tmp
+
+# IDE / tooling
+.idea/
+.vscode/
+*.iml
+.fleet/
+.history/
+.cursor/
+
+# --- Secrets / local env --------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# --- Go (backend) ---------------------------------------------------
+# Compiled binaries
+/bin/
+/dist/
+/build/
+*.exe
+*.exe~
+*.dll
+*.dylib
+*.so
+*.test
+*.out
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Coverage / profiling
+*.cover
+*.coverprofile
+coverage.txt
+coverage.html
+coverage.out
+*.gcda
+*.gcno
+*.gcov
+prof.cpu
+prof.mem
+
+# Test caches
+.cache/
+.gocache/
+
+# --- Node / Svelte 5 / Vite / TypeScript (frontend) -----------------
+node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Build outputs
+/frontend/dist/
+/frontend/build/
+/frontend/.svelte-kit/
+/frontend/.vite/
+/frontend/.turbo/
+/frontend/.cache/
+/frontend/.next/
+/frontend/.nuxt/
+/frontend/.parcel-cache/
+
+# Vite
+.vite/
+*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# --- Docker / deploy -----------------------------------------------
+# Compose override files are local-only
+docker-compose.override.yml
+docker-compose.override.yaml
+docker-compose.local.yml
+docker-compose.local.yaml
+docker-compose.redmine.yml
+*.dockerfile.local
+
+# Mounted volumes / runtime data
+deploy/.volumes/
+deploy/data/
+deploy/.env
+deploy/secrets/
+
+# --- Air (backend hot reload) -------------------------------------
+/backend/tmp/
+/backend/build-errors.log
+backend/main
+backend/main.exe
+/backend/vermilion
+/backend/vermilion-db
+/backend/vermilion-demo
+
+# --- Svelte / Vite (frontend) -------------------------------------
+/frontend/.svelte-kit/
+/frontend/src/app.d.ts
+
+# --- Generated / temp files ----------------------------------------
+*.pid
+*.seed
+*.pid.lock
+.tmp/
+.tmp.*
+tmp/
+tmp.*
+*.tgz
+
+# --- Evidence / runtime artifacts (committed evidence stays tracked) -
+.sisyphus/drafts/
+.sisyphus/run-continuation/
+.sisyphus/
+scripts/
+docs/internal/
