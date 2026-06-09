@@ -14,13 +14,21 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'card-click', issue: BoardIssue): void
   (e: 'status-change', issueId: number, newStatusId: number): void
+  (e: 'column-reorder', fromStatusId: number, toStatusId: number): void
 }>()
 
+// --- card drag state ---
 const dragOverStatusId = ref<number | null>(null)
+let draggingIssueId: number | null = null
+
+// --- column drag state ---
+const draggingColumnId = ref<number | null>(null)
+const dragOverColumnId = ref<number | null>(null)
+
+// --- column search state ---
 const columnSearch = ref<Record<number, string>>({})
 const columnSearchOpen = ref<Record<number, boolean>>({})
 const columnRefs = ref<Record<number, HTMLElement | null>>({})
-let draggingIssueId: number | null = null
 
 function toggleSearch(statusId: number) {
   columnSearchOpen.value[statusId] = !columnSearchOpen.value[statusId]
@@ -47,6 +55,7 @@ function filteredIssues(statusId: number): ReturnType<typeof props.issuesByStatu
   return q ? issues.filter(i => i.subject.toLowerCase().includes(q)) : issues
 }
 
+// --- card drag handlers ---
 function onDragStart(id: number) {
   draggingIssueId = id
 }
@@ -54,19 +63,46 @@ function onDragStart(id: number) {
 function onDragOver(e: DragEvent, statusId: number) {
   e.preventDefault()
   e.dataTransfer!.dropEffect = 'move'
-  dragOverStatusId.value = statusId
+  if (draggingColumnId.value !== null) {
+    dragOverColumnId.value = statusId
+  } else {
+    dragOverStatusId.value = statusId
+  }
 }
 
 function onDragLeave(statusId: number) {
-  if (dragOverStatusId.value === statusId) dragOverStatusId.value = null
+  if (draggingColumnId.value !== null) {
+    if (dragOverColumnId.value === statusId) dragOverColumnId.value = null
+  } else {
+    if (dragOverStatusId.value === statusId) dragOverStatusId.value = null
+  }
 }
 
 function onDrop(e: DragEvent, statusId: number) {
   e.preventDefault()
-  dragOverStatusId.value = null
-  const id = draggingIssueId ?? parseInt(e.dataTransfer!.getData('text/plain'))
-  if (id) emit('status-change', id, statusId)
-  draggingIssueId = null
+  if (draggingColumnId.value !== null) {
+    dragOverColumnId.value = null
+    if (draggingColumnId.value !== statusId) {
+      emit('column-reorder', draggingColumnId.value, statusId)
+    }
+    draggingColumnId.value = null
+  } else {
+    dragOverStatusId.value = null
+    const id = draggingIssueId ?? parseInt(e.dataTransfer!.getData('text/plain'))
+    if (id) emit('status-change', id, statusId)
+    draggingIssueId = null
+  }
+}
+
+// --- column drag handlers ---
+function onColumnDragStart(e: DragEvent, statusId: number) {
+  draggingColumnId.value = statusId
+  e.dataTransfer!.effectAllowed = 'move'
+}
+
+function onColumnDragEnd() {
+  draggingColumnId.value = null
+  dragOverColumnId.value = null
 }
 </script>
 
@@ -77,16 +113,36 @@ function onDrop(e: DragEvent, statusId: number) {
       :key="status.id"
       :ref="el => columnRefs[status.id] = el as HTMLElement"
       class="flex flex-col w-72 flex-shrink-0 rounded-xl border transition-colors min-h-0 overflow-hidden"
-      :class="dragOverStatusId === status.id
-        ? 'border-white/30 border-dashed'
-        : 'border-white/10'"
+      :class="dragOverColumnId === status.id && draggingColumnId !== status.id
+        ? 'border-white/50 border-dashed'
+        : dragOverStatusId === status.id
+          ? 'border-white/30 border-dashed'
+          : 'border-white/10'"
       @dragover="onDragOver($event, status.id)"
       @dragleave="onDragLeave(status.id)"
       @drop="onDrop($event, status.id)"
     >
       <!-- Column header -->
       <div class="flex items-center justify-between px-3 py-2 border-b border-white/10">
-        <span class="text-sm font-semibold text-zinc-300">{{ status.name }}</span>
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span
+            draggable="true"
+            class="text-zinc-700 hover:text-zinc-400 cursor-grab active:cursor-grabbing flex-shrink-0 select-none"
+            title="Drag to reorder column"
+            @dragstart="onColumnDragStart($event, status.id)"
+            @dragend="onColumnDragEnd"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-3.5" viewBox="0 0 8 14" fill="currentColor">
+              <circle cx="2" cy="2" r="1.5"/>
+              <circle cx="6" cy="2" r="1.5"/>
+              <circle cx="2" cy="7" r="1.5"/>
+              <circle cx="6" cy="7" r="1.5"/>
+              <circle cx="2" cy="12" r="1.5"/>
+              <circle cx="6" cy="12" r="1.5"/>
+            </svg>
+          </span>
+          <span class="text-sm font-semibold text-zinc-300 truncate">{{ status.name }}</span>
+        </div>
         <div class="flex items-center gap-1.5">
           <span class="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-full">
             {{ filteredIssues(status.id).length }}
@@ -117,7 +173,7 @@ function onDrop(e: DragEvent, statusId: number) {
       <!-- Drop zone -->
       <div
         class="flex-1 p-2 space-y-2 min-h-24 overflow-y-auto transition-colors"
-        :class="dragOverStatusId === status.id ? 'bg-white/5' : 'bg-zinc-950'"
+        :class="dragOverStatusId === status.id && draggingColumnId === null ? 'bg-white/5' : 'bg-zinc-950'"
       >
         <KanbanCard
           v-for="issue in filteredIssues(status.id)"

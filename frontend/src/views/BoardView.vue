@@ -27,12 +27,12 @@ const orderedStatuses = computed(() => {
   const order = config.columnOrder
   let statuses = order.length
     ? order.map(id => board.allStatuses.find(s => s.id === id)).filter(Boolean) as typeof board.allStatuses
-    : board.allStatuses
+    : board.allStatuses.slice().sort((a, b) => a.name.localeCompare(b.name))
   const preset = presetsStore.activePreset
   if (preset && preset.statusIds.length > 0) {
     statuses = statuses.filter(s => preset.statusIds.includes(s.id))
   }
-  return statuses.slice().sort((a, b) => a.name.localeCompare(b.name))
+  return statuses
 })
 
 function startPolling() {
@@ -97,6 +97,16 @@ watch(() => config.selectedProject, () => {
 
 function handleDrop(issueId: number, newStatusId: number) {
   board.moveIssue(issueId, newStatusId).catch(() => {})
+}
+
+function handleColumnReorder(fromStatusId: number, toStatusId: number) {
+  const current = orderedStatuses.value.map(s => s.id)
+  const from = current.indexOf(fromStatusId)
+  const to = current.indexOf(toStatusId)
+  if (from < 0 || to < 0 || from === to) return
+  current.splice(from, 1)
+  current.splice(to, 0, fromStatusId)
+  config.saveColumnOrder(current)
 }
 </script>
 
@@ -210,6 +220,7 @@ function handleDrop(issueId: number, newStatusId: number) {
           :redmine-url="config.redmineUrl"
           @card-click="(issue: BoardIssue) => openIssueId = issue.id"
           @status-change="handleDrop"
+          @column-reorder="handleColumnReorder"
           class="flex-1 overflow-hidden"
         />
 
