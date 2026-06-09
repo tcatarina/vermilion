@@ -366,7 +366,7 @@ func (h *Handlers) fetchBoard(ctx context.Context, rc reqContext) (BoardPayload,
 		log.Printf("vermilion: fetchBoard: members error (non-fatal): %v", mr.err)
 	}
 	if vr.err != nil {
-		return BoardPayload{}, fmt.Errorf("fetch versions: %w", vr.err)
+		log.Printf("vermilion: fetchBoard: versions error (non-fatal): %v", vr.err)
 	}
 
 	statuses := make([]BoardStatus, len(sr.statuses))
@@ -471,6 +471,13 @@ func (h *Handlers) handleUpdateIssueStatus(w http.ResponseWriter, r *http.Reques
 		}
 		Internal(w, err)
 		return
+	}
+
+	if h.Repo != nil {
+		key := cacheKey(rc.redmineURL, rc.projectIdentifier)
+		if err := h.Repo.DeleteCache(r.Context(), key); err != nil {
+			log.Printf("vermilion: cache invalidation error: %v", err)
+		}
 	}
 
 	// Fetch updated issue to return

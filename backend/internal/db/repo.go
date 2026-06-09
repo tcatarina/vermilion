@@ -41,6 +41,11 @@ func (r *Repo) GetCache(ctx context.Context, key string) (CacheEntry, error) {
 	return e, nil
 }
 
+func (r *Repo) DeleteCache(ctx context.Context, key string) error {
+	_, err := r.pool.Exec(ctx, `DELETE FROM board_cache WHERE key = $1`, key)
+	return err
+}
+
 func (r *Repo) SetCache(ctx context.Context, key string, payload []byte) error {
 	_, err := r.pool.Exec(ctx, `
 INSERT INTO board_cache (key, payload, cached_at)
